@@ -6,7 +6,7 @@ Documento vivo. Última atualização: **30/10/2026** (sessão 1: provisionament
 
 | Frente | Estado |
 |---|---|
-| Repositório | ✅ commits locais; remote `origin` = `git@github.com:luifegja/henrique-ventura-infra.git`. ⛔ **push pendente**: a trava de permissões da sessão barrou o `git push` (o Luiz libera ou roda `git push -u origin main`) |
+| Repositório | ✅ `git@github.com:luifegja/henrique-ventura-infra.git` (origin, `main` em dia) |
 | Servidor | ✅ `/opt/henriqueventura` (700) + `.env` (600, 5 variáveis) + `docker-compose.yml` + `backups/` |
 | Chatwoot | ✅ conta **20** "Henrique Ventura" (locale pt_BR); Luiz (id 4) administrador; bot id 16 agente |
 | Cadência comercial | ✅ atributo de contato `cadencia_comercial` (lista, definição 17): Lead → 1º contato → Qualificação → Agendamento → Reunião diagnóstico → Follow up → Contrato enviado → Pagamento |
@@ -18,11 +18,10 @@ Documento vivo. Última atualização: **30/10/2026** (sessão 1: provisionament
 
 ## Próximos passos
 
-1. Push para o GitHub.
-2. Avisar o Vítor do bloco novo no Caddyfile (e de que `litoralindica.advotrack.com.br` já respondia 000 antes da mudança).
-3. E-mail do Henrique → `bash scripts/cria-usuario-chatwoot.sh "Henrique Ventura" <e-mail>`
+1. Avisar o Vítor do bloco novo no Caddyfile (e de que `litoralindica.advotrack.com.br` já respondia 000 antes da mudança).
+2. E-mail do Henrique → `bash scripts/cria-usuario-chatwoot.sh "Henrique Ventura" <e-mail>`
    (senha mostrada uma vez, entregue a ele).
-4. Pareamento pela tela WhatsApp (Henrique com o celular na mão) → 5 min → o painel liga o
+3. Pareamento pela tela WhatsApp (Henrique com o celular na mão) → 5 min → o painel liga o
    Chatwoot e põe bot + administradores na inbox → mensagem do celular do Luiz cai em Atendimentos.
 
 ## Decisões
