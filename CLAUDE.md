@@ -7,19 +7,23 @@ convivência, não negociáveis).
 
 ## O que é
 
-Atendimento comercial do **Henrique Ventura** por WhatsApp: o número dele ligado à
-Evolution, as conversas caindo numa conta própria do Chatwoot, e cada contato marcado com
-a etapa da **cadência comercial** (atributo `cadencia_comercial`). Por enquanto sem banco,
-sem n8n e sem robô de IA (decisão de 30/10/2026, `docs/plano.md`).
+Atendimento comercial do **Henrique Ventura** por WhatsApp, feito por pessoas (sem agentes
+de IA): o número dele ligado à Evolution, as conversas caindo numa conta própria do Chatwoot,
+cada contato marcado com a etapa da **cadência comercial** (atributo `cadencia_comercial`), e
+um **painel** em `https://henriqueventura.advotrack.com.br` com três telas: Leads (quadro por
+etapa), Atendimentos (ler e responder) e WhatsApp (parear pelo QR). Sem banco e sem n8n:
+o Chatwoot é a fonte da verdade (`docs/decisoes/2026-10-30-painel-sem-banco.md`).
 
 ## Infraestrutura compartilhada
 
 Roda no `advotrack-prod`, **ao lado de clientes em produção** (AdvoTrack, Garcia,
 ImobTrack, Litoral Indica, GymTrack, EnglishGrade…). Resumo das regras:
 
-- **Só é nosso**: `~/projetos/henriqueventura`, `/opt/henriqueventura`, a instância
-  `henriqueventura` da Evolution, a conta 20 "Henrique Ventura" do Chatwoot e o usuário
-  `bot@henriqueventura.local`. Todo o resto é só leitura.
+- **Só é nosso**: `~/projetos/henriqueventura`, `/opt/henriqueventura`, o contêiner
+  `henriqueventura-web`, a instância `henriqueventura` da Evolution, a conta 20 "Henrique
+  Ventura" do Chatwoot e o usuário `bot@henriqueventura.local`. Todo o resto é só leitura.
+- **CliniTrack 2.0, GymTrack e EnglishGrade são referência de código**: ler e copiar de lá
+  para cá; nunca editar, commitar ou rodar scripts deles.
 - **Nunca**: `logout/delete/restart/connect/chatwoot/set` em instância sem o slug; mexer em
   outra conta do Chatwoot; `docker compose` fora de `/opt/henriqueventura`; `prune`,
   `volume rm`, `apt`, `reboot`; UFW, iptables, sshd, Caddy, DNS; copiar segredo de outro
@@ -46,7 +50,9 @@ ImobTrack, Litoral Indica, GymTrack, EnglishGrade…). Resumo das regras:
 | Atributo de contato | `cadencia_comercial` (lista) — `scripts/cria-atributos-chatwoot.sh` |
 | Evolution | instância `henriqueventura` (Baileys); chave em `HENRIQUEVENTURA_EVOLUTION_INSTANCE_KEY` |
 | Inbox WhatsApp | `henriqueventura`, criada pela Evolution ao ligar a integração (depois do pareamento) |
-| Variáveis do `.env` | `CHATWOOT_ACCOUNT_ID`, `CHATWOOT_BOT_USER_ID`, `CHATWOOT_BOT_TOKEN`, `HENRIQUEVENTURA_EVOLUTION_INSTANCE_KEY` |
+| Painel | contêiner `henriqueventura-web`, imagem `henriqueventura-web:0.1.0`, `127.0.0.1:3600` → `https://henriqueventura.advotrack.com.br` |
+| Compose | `infra/docker-compose.yml` (`name: henriqueventura`, rede externa `advotrack`), copiado para `/opt/henriqueventura/` por `scripts/implanta-web.sh` |
+| Variáveis do `.env` | `CHATWOOT_ACCOUNT_ID`, `CHATWOOT_BOT_USER_ID`, `CHATWOOT_BOT_TOKEN`, `HENRIQUEVENTURA_EVOLUTION_INSTANCE_KEY`, `HENRIQUEVENTURA_WEB_AUTH_SECRET` |
 
 ## Scripts (todos rodam no servidor e são idempotentes)
 
@@ -56,7 +62,33 @@ ImobTrack, Litoral Indica, GymTrack, EnglishGrade…). Resumo das regras:
 | `scripts/cria-usuario-chatwoot.sh "Nome" email [administrator\|agent]` | atendente humano na conta 20 |
 | `scripts/cria-atributos-chatwoot.sh` | cria/atualiza os atributos de contato (lista `ATRIBUTOS` no próprio script) |
 | `scripts/cria-instancia-evolution.sh` | instância sem QR e sem Chatwoot; grava a chave da instância |
-| `scripts/liga-chatwoot-evolution.sh [desligar]` | integração Chatwoot na instância (só com `open` estável) + membros da inbox |
+| `scripts/liga-chatwoot-evolution.sh [desligar]` | integração Chatwoot na instância (só com `open` estável) + membros da inbox — alternativa manual à tela WhatsApp |
+| `scripts/implanta-web.sh` | build da imagem a partir do repositório e troca só do contêiner `henriqueventura-web` |
+| `python3 -I scripts/teste-ponta-a-ponta.py` | bateria no navegador (Playwright): cria usuários/caixa/lead `e2e`, testa as três telas, confere no Chatwoot e apaga tudo |
+
+## Painel (`web/`)
+
+Next.js 15 + Auth.js v5 (Credentials) + Tailwind; base copiada do CliniTrack 2.0 sem banco e
+sem multi-cliente. Peças que não se negociam:
+
+- **Login é o do Chatwoot** (`lib/chatwoot-api.ts` → `signInChatwoot`); só membros da conta 20.
+  O token do Chatwoot da pessoa fica no JWT e é lido **só no servidor** (`lib/session.ts`);
+  o callback `session` não o expõe ao navegador.
+- **Toda chamada ao Chatwoot usa o token de quem está logado** (nunca o do bot), pela rede
+  interna `http://chatwoot-web:3000`. O token do bot só liga a integração da Evolution.
+- **Etapas = valores da definição do atributo** (lidos na hora); sem etapa → Lead
+  (`lib/cadencia.ts`, testado).
+- **WhatsApp**: chave da instância, freios em `lib/whatsapp-gate.ts` (testado), estado em memória
+  (`lib/whatsapp.ts`), coreografia em `app/(app)/whatsapp/actions.ts` (decidir pelo estado VIVO;
+  QR lido → nunca chamar `connect` de novo; 3 min sem leitura → `logout` por temporizador; 5 min
+  em `open` → liga o Chatwoot e põe bot + administradores na inbox).
+- Server Actions devolvem `ActionResult` e nunca lançam para o cliente.
+- Sem node no host: checagens em contêiner descartável:
+
+  ```bash
+  cd ~/projetos/henriqueventura/web && docker run --rm --name henriqueventura-build -u 1000:1000 -e HOME=/tmp \
+    -v "$PWD":/app -w /app node:22.23.4-alpine sh -c "npm ci && npm run typecheck && npm run lint && npm test"
+  ```
 
 ## Convenções
 

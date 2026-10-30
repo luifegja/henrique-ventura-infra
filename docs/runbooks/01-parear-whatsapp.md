@@ -8,6 +8,11 @@ sessão caia. Baseado no `docs/runbooks/01-parear-whatsapp.md` do AdvoTrack (lei
 expira em ~40 s. Cada código pedido conta como tentativa; excesso no mesmo dia gera
 "conta restringida" (~6 h). Prepare tudo antes de chamar a pessoa.
 
+**Caminho normal: a tela WhatsApp do painel** (administrador da conta 20). Ela segue este
+runbook sozinha: desliga o Chatwoot antes do QR, decide pelo estado vivo, para o ciclo em 3 min
+sem leitura, faz o teste de entrega, espera 5 min em `open` e liga o Chatwoot (pondo bot e
+administradores na inbox). Os comandos abaixo são a alternativa manual.
+
 ## Regra de ouro
 
 **Nunca pareie com a integração Chatwoot ligada.** Sequência segura: parear limpo →

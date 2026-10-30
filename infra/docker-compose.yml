@@ -1,0 +1,52 @@
+# Henrique Ventura — painel, ao lado dos projetos irmãos no mesmo servidor.
+#
+# Fonte de verdade é este arquivo; scripts/implanta-web.sh o copia para /opt/henriqueventura.
+# Nunca editar direto em /opt. Molde: infra/docker-compose.yml do CliniTrack 2.0.
+#
+#   - `name:` próprio: `docker compose ps` aqui nunca enxerga os vizinhos.
+#   - Rede externa `advotrack`: o painel fala com chatwoot-web e evolution pelo nome, e o Caddy
+#     chega em `henriqueventura-web:3000`. Sempre pelo container_name, nunca pelo alias `web`
+#     (vários projetos respondem por ele).
+#   - Porta só em 127.0.0.1. 3600 estava livre em 30/10/2026 (3100–3500 são dos vizinhos).
+#   - Imagem com versão fixada, nunca :latest.
+#   - SEM `env_file`: só as variáveis abaixo, interpoladas de /opt/henriqueventura/.env.
+#     Não há banco: o painel lê e grava tudo no Chatwoot, com o token de quem está logado.
+name: henriqueventura
+
+networks:
+  advotrack:
+    external: true
+
+services:
+  web:
+    # Construída a partir do repositório (scripts/implanta-web.sh):
+    #   docker build -t henriqueventura-web:0.1.0 ~/projetos/henriqueventura/web
+    image: henriqueventura-web:0.1.0
+    container_name: henriqueventura-web
+    restart: unless-stopped
+    networks:
+      - advotrack
+    ports:
+      - "127.0.0.1:3600:3000"
+    environment:
+      NODE_ENV: production
+      TZ: America/Sao_Paulo
+      AUTH_SECRET: ${HENRIQUEVENTURA_WEB_AUTH_SECRET}
+      AUTH_URL: https://henriqueventura.advotrack.com.br
+      AUTH_TRUST_HOST: "true"
+      # Chatwoot: API interna (login e tudo o mais) e deep-link público.
+      CHATWOOT_INTERNAL_URL: http://chatwoot-web:3000
+      CHATWOOT_PUBLIC_URL: https://chat.advotrack.com.br
+      CHATWOOT_ACCOUNT_ID: ${CHATWOOT_ACCOUNT_ID}
+      # Só para ligar a integração Evolution→Chatwoot depois do pareamento (tela WhatsApp).
+      CHATWOOT_BOT_TOKEN: ${CHATWOOT_BOT_TOKEN}
+      CHATWOOT_BOT_USER_ID: ${CHATWOOT_BOT_USER_ID}
+      # Evolution pela rede interna, com a apikey DA INSTÂNCIA (só abre `henriqueventura`).
+      EVOLUTION_INTERNAL_URL: http://evolution:8080
+      HENRIQUEVENTURA_EVOLUTION_INSTANCE_KEY: ${HENRIQUEVENTURA_EVOLUTION_INSTANCE_KEY}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/login"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s

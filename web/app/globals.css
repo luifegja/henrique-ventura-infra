@@ -1,0 +1,552 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Tokens (docs/decisoes/2026-08-25-design-do-painel.md; direção A escolhida em 21/09).
+ * Valores em "r g b" para o Tailwind aplicar opacidade.
+ * Claro é o padrão; [data-theme="dark"] troca só os valores; sem preferência
+ * explícita, prefers-color-scheme decide.
+ */
+:root {
+  --bg: 244 241 234;
+  --surface: 255 254 251;
+  --surface-2: 239 235 225;
+  --ink: 24 36 31;
+  --ink-muted: 107 119 113;
+  --line: 210 203 187;
+  --accent: 31 61 52;
+  --accent-soft: 214 224 216;
+  --on-accent: 244 241 234;
+  /* Preenchimento do botão primário. No claro é o próprio pinho; no escuro
+   * é um pinho profundo com texto claro — o sálvia fica só para texto e foco. */
+  --accent-fill: 31 61 52;
+  --on-accent-fill: 244 241 234;
+  --danger: 184 68 46;
+  --state-ai: 91 122 138;
+  --state-human: 192 112 63;
+  --state-won: 63 125 95;
+  --state-lost: 122 90 85;
+  --state-abandoned: 140 136 130;
+  /* A coluna de navegação é o próprio pinho; o item ativo precisa de um
+   * segundo tom (ouro velho da marca) porque spine e accent são a mesma cor. */
+  --spine: 31 61 52;
+  --spine-ink: 217 224 219;
+  --spine-accent: 176 138 62;
+  color-scheme: light;
+
+  /* Movimento (docs/decisoes/2026-09-21-fluidez-do-painel.md e
+   * 2026-09-25-movimento-do-painel.md). Três durações e uma curva; nada
+   * acima de 260 ms no que responde a um clique. As exceções são a chegada
+   * ao Painel (420–700 ms, uma vez por sessão), a troca de tema (480 ms) e o
+   * WhatsApp conectado (700 ms). */
+  --dur-1: 120ms;
+  --dur-2: 180ms;
+  --dur-3: 260ms;
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+[data-theme="dark"] {
+  --bg: 17 26 23;
+  --surface: 25 36 32;
+  --surface-2: 33 46 41;
+  --ink: 232 236 231;
+  --ink-muted: 156 170 162;
+  --line: 52 68 60;
+  --accent: 143 184 165;
+  --accent-soft: 36 56 48;
+  --on-accent: 17 26 23;
+  --accent-fill: 44 84 72;
+  --on-accent-fill: 232 236 231;
+  --danger: 224 122 102;
+  --state-ai: 143 166 181;
+  --state-human: 217 164 65;
+  --state-won: 141 184 132;
+  --state-lost: 184 154 148;
+  --state-abandoned: 120 116 110;
+  --spine: 14 30 25;
+  --spine-ink: 217 224 219;
+  --spine-accent: 205 187 135;
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: 17 26 23;
+    --surface: 25 36 32;
+    --surface-2: 33 46 41;
+    --ink: 232 236 231;
+    --ink-muted: 156 170 162;
+    --line: 52 68 60;
+    --accent: 143 184 165;
+    --accent-soft: 36 56 48;
+    --on-accent: 17 26 23;
+    --accent-fill: 44 84 72;
+    --on-accent-fill: 232 236 231;
+    --danger: 224 122 102;
+    --state-ai: 143 166 181;
+    --state-human: 217 164 65;
+    --state-won: 141 184 132;
+    --state-lost: 184 154 148;
+    --state-abandoned: 120 116 110;
+    --spine: 14 30 25;
+    --spine-ink: 217 224 219;
+    --spine-accent: 205 187 135;
+    color-scheme: dark;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-line;
+  }
+  html {
+    @apply bg-bg text-ink antialiased;
+  }
+  body {
+    @apply bg-bg font-sans text-base text-ink;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-display font-medium tracking-tight;
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-accent ring-offset-2 ring-offset-bg;
+  }
+  /* Todo elemento interativo responde ao hover/foco em 120 ms, sem cada
+   * componente precisar lembrar. Só propriedades baratas para o compositor. */
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  summary,
+  [role="button"],
+  [role="menuitem"],
+  [role="option"] {
+    transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+    transition-duration: var(--dur-1);
+    transition-timing-function: var(--ease-out);
+  }
+  /* Pressionar afunda meio pixel: o clique "pega". */
+  button:not(:disabled):active,
+  [role="button"]:not([aria-disabled="true"]):active {
+    transform: translateY(0.5px);
+  }
+  table {
+    @apply tabular-nums;
+  }
+  ::selection {
+    @apply bg-accent-soft text-ink;
+  }
+}
+
+@layer components {
+  /* A aba da pasta: borda esquerda de 3px com a cor do estado. */
+  .tab-ai {
+    @apply border-l-[3px] border-l-state-ai;
+  }
+  .tab-human {
+    @apply border-l-[3px] border-l-state-human;
+  }
+  .tab-won {
+    @apply border-l-[3px] border-l-state-won;
+  }
+  .tab-lost {
+    @apply border-l-[3px] border-l-state-lost;
+  }
+  .tab-abandoned {
+    @apply border-l-[3px] border-l-state-abandoned;
+  }
+  .tab-none {
+    @apply border-l-[3px] border-l-line;
+  }
+
+  /* Rótulo de seção: pequeno, em versalete, com filete. */
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.12em] text-ink-muted;
+  }
+
+  /* Modo técnico (barra lateral, ícone de código): chaves de evento, ids,
+   * JSON e nomes de tabela só aparecem com ele ligado. `revert` devolve o
+   * display natural do elemento (inline, block, table-row…). */
+  .tech {
+    display: none;
+  }
+  :root[data-tech="on"] .tech {
+    display: revert;
+  }
+}
+
+/* Entradas: opacidade + 4 px de subida. Curtas o bastante para não atrasar
+ * ninguém; o reduced-motion abaixo zera tudo. */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+/* O cartão que acabou de assentar no Kanban / a linha que acabou de mudar. */
+@keyframes settle {
+  0% {
+    transform: scale(0.985);
+    border-color: rgb(var(--accent));
+  }
+  60% {
+    transform: scale(1);
+  }
+  100% {
+    border-color: rgb(var(--line));
+  }
+}
+/* Skeleton: varredura discreta, não o brilho branco de app de consumo. */
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---- 25/09: acabamento (docs/decisoes/2026-09-25-movimento-do-painel.md) ---- */
+
+/* M2: barra por etapa cresce da esquerda, só na chegada (components/ui/arrival.tsx). */
+[data-arrival] .arrive-grow {
+  animation: grow-x 420ms var(--ease-out) backwards;
+}
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* M3: as oito primeiras linhas chegam em cascata; o resto chega junto com a oitava. */
+.cascade > * {
+  animation: rise-in var(--dur-2) var(--ease-out) backwards;
+}
+.cascade > :nth-child(2) { animation-delay: 30ms; }
+.cascade > :nth-child(3) { animation-delay: 60ms; }
+.cascade > :nth-child(4) { animation-delay: 90ms; }
+.cascade > :nth-child(5) { animation-delay: 120ms; }
+.cascade > :nth-child(6) { animation-delay: 150ms; }
+.cascade > :nth-child(7) { animation-delay: 180ms; }
+.cascade > :nth-child(n + 8) { animation-delay: 210ms; }
+
+/* M6: a troca de tema abre em círculo; o recorte é animado por script
+ * (theme-toggle.tsx). Sem isto, o navegador faria o esmaecimento padrão. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* M7: o cartão pego no Kanban se ergue. */
+@keyframes lift {
+  from {
+    transform: none;
+    box-shadow: 0 0 0 rgb(var(--ink) / 0);
+  }
+}
+
+/* M8: o traço do aviso esvazia no tempo do aviso (--toast-ttl) e para com o
+ * mouse ou o foco em cima. O fim da animação fecha o aviso (toast.tsx). */
+.toast-timer {
+  animation: toast-timer var(--toast-ttl) linear forwards;
+}
+.group:hover > .toast-timer,
+.group:focus-within > .toast-timer {
+  animation-play-state: paused;
+}
+@keyframes toast-timer {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+@keyframes toast-out {
+  to {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+}
+@keyframes collapse-rows {
+  from {
+    grid-template-rows: 1fr;
+  }
+  to {
+    grid-template-rows: 0fr;
+  }
+}
+@keyframes expand-rows {
+  from {
+    grid-template-rows: 0fr;
+  }
+  to {
+    grid-template-rows: 1fr;
+  }
+}
+
+/* M9 e M14: o ✓ se desenha. */
+.draw-check path {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  animation: draw-stroke 300ms var(--ease-out) var(--draw-delay, 60ms) forwards;
+}
+@keyframes draw-stroke {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* M10: <details> abre deslizando onde o navegador sabe animar até `auto`
+ * (Chrome 131+); nos outros, abre como antes. Sem `selector(...)` no
+ * @supports: o autoprefixer do projeto não entende; navegador sem
+ * ::details-content só ignora as regras abaixo. */
+@supports (interpolate-size: allow-keywords) {
+  details {
+    interpolate-size: allow-keywords;
+  }
+  details::details-content {
+    block-size: 0;
+    overflow-y: clip;
+    transition:
+      block-size var(--dur-2) var(--ease-out),
+      content-visibility var(--dur-2) allow-discrete;
+  }
+  details[open]::details-content {
+    block-size: auto;
+  }
+}
+
+/* M11: número que muda rola como odômetro. */
+@keyframes odo-in-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+@keyframes odo-in-down {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+}
+@keyframes odo-out-up {
+  to {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+}
+@keyframes odo-out-down {
+  to {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+/* M12: mensagem nova cresce do canto de quem falou. */
+@keyframes bubble-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
+}
+
+/* M13: "IA digitando" em onda. */
+@keyframes dots-wave {
+  0%,
+  60%,
+  100% {
+    transform: none;
+    opacity: 0.35;
+  }
+  30% {
+    transform: translateY(-3px);
+    opacity: 1;
+  }
+}
+
+/* M14: o ponto do WhatsApp solta um anel, uma vez. */
+@keyframes ping-once {
+  from {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  to {
+    transform: scale(2.8);
+    opacity: 0;
+  }
+}
+
+/* M15: o sublinhado se desenha da esquerda. Só com mouse; no toque e com
+ * menos movimento, fica o sublinhado de sempre. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  /* Com o elemento no seletor: o Tailwind emite `hover:underline` no fim do
+   * arquivo, então só a especificidade maior garante que esta regra vença. */
+  a.hover\:underline,
+  button.hover\:underline {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    background-size: 0 1px;
+    transition-property: color, background-color, border-color, box-shadow, opacity, transform, background-size;
+    transition-duration: var(--dur-1), var(--dur-1), var(--dur-1), var(--dur-1), var(--dur-1), var(--dur-1), var(--dur-2);
+    transition-timing-function: var(--ease-out);
+  }
+  a.hover\:underline:hover,
+  button.hover\:underline:hover {
+    text-decoration-line: none;
+    background-size: 100% 1px;
+  }
+  /* Link já sublinhado em cinza (lista de eventos do Painel): o traço de
+   * acento cresce por cima do cinza. */
+  .underline.hover\:decoration-accent {
+    text-decoration-line: none;
+    background-image: linear-gradient(rgb(var(--accent)), rgb(var(--accent))), linear-gradient(rgb(var(--line)), rgb(var(--line)));
+    background-position: 0 100%, 0 100%;
+    background-repeat: no-repeat;
+    background-size: 0 1px, 100% 1px;
+    transition-property: color, background-size;
+    transition-duration: var(--dur-1), var(--dur-2);
+    transition-timing-function: var(--ease-out);
+  }
+  .underline.hover\:decoration-accent:hover {
+    background-size: 100% 1px, 100% 1px;
+  }
+}
+
+/* ---- 25/09, rodada 2 (M16–M27; mesmo documento de decisão) ---- */
+
+/* M18: o menu cresce a partir do botão e some mais rápido do que aparece. */
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+@keyframes menu-out {
+  to {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+}
+
+/* M19: dica do painel (components/ui/tooltips.tsx), no lugar da do navegador. */
+.tooltip {
+  position: fixed;
+  z-index: 80;
+  max-width: 280px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  background: rgb(var(--ink));
+  color: rgb(var(--bg));
+  font-size: 12px;
+  line-height: 17px;
+  white-space: pre-line;
+  pointer-events: none;
+  animation: tip-in var(--dur-1) var(--ease-out) backwards;
+}
+.tooltip::after {
+  content: "";
+  position: absolute;
+  left: var(--arrow-x, 50%);
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+}
+.tooltip[data-side="top"]::after {
+  top: 100%;
+  border-top-color: rgb(var(--ink));
+}
+.tooltip[data-side="bottom"]::after {
+  bottom: 100%;
+  border-bottom-color: rgb(var(--ink));
+}
+@keyframes tip-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* M22: o selo "no ar" da versão recém-publicada solta um anel verde, uma vez. */
+@keyframes glow-once {
+  from {
+    box-shadow: 0 0 0 0 rgb(var(--state-won) / 0.55);
+  }
+  to {
+    box-shadow: 0 0 0 10px rgb(var(--state-won) / 0);
+  }
+}
+
+/* M26: "pensando…" com um brilho que percorre a palavra. */
+.shimmer-text {
+  background-image: linear-gradient(
+    90deg,
+    rgb(var(--ink-muted)) 0%,
+    rgb(var(--ink-muted)) 40%,
+    rgb(var(--ink)) 50%,
+    rgb(var(--ink-muted)) 60%,
+    rgb(var(--ink-muted)) 100%
+  );
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer-text 1.6s linear infinite;
+}
+@keyframes shimmer-text {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -150% 0;
+  }
+}
+
+/* M27: barras de progresso da ficha crescem até o valor ao abrir. */
+.grow-in {
+  transform-origin: left center;
+  animation: grow-x 420ms var(--ease-out) backwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  /* O traço do aviso é relógio, não enfeite: sem ele o aviso sumiria na hora. */
+  .toast-timer {
+    animation-duration: var(--toast-ttl) !important;
+  }
+}

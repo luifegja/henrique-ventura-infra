@@ -39,6 +39,25 @@ bash scripts/cria-usuario-chatwoot.sh "Henrique Ventura" <e-mail>      # senha a
 bash scripts/liga-chatwoot-evolution.sh
 ```
 
+## Painel no dia a dia
+
+```bash
+cd ~/projetos/henriqueventura
+bash scripts/implanta-web.sh                  # build + troca só do henriqueventura-web + /login 200
+docker compose -p henriqueventura logs -f web # de dentro de /opt/henriqueventura
+OUT=/tmp/henriqueventura-e2e python3 -I scripts/teste-ponta-a-ponta.py   # bateria; apaga o que cria
+```
+
+Nunca `docker compose` fora de `/opt/henriqueventura`. O Caddy (domínio público) está em
+`infra/caddy/bloco-henriqueventura.md`, aplicado só com o "pode" do Luiz.
+
+| Sintoma | Leitura |
+|---|---|
+| Login diz "O Chatwoot não respondeu" | `docker logs --tail 50 henriqueventura-web`; o contêiner está na rede `advotrack`? |
+| Login diz "sem acesso à conta" | o usuário não é membro da conta 20: `scripts/cria-usuario-chatwoot.sh` |
+| Quadro vazio com contatos no Chatwoot | agente só vê o que o Chatwoot deixa; testar com um administrador |
+| Tela WhatsApp diz "sem acesso à Evolution" | falta `HENRIQUEVENTURA_EVOLUTION_INSTANCE_KEY` no `.env` ou o compose não foi recopiado |
+
 ## "Estou atrapalhando os vizinhos?" (fim de toda sessão)
 
 ```bash

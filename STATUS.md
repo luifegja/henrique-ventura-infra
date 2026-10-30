@@ -1,32 +1,37 @@
 # STATUS — Henrique Ventura
 
-Documento vivo. Última atualização: **30/10/2026** (sessão 1: provisionamento).
+Documento vivo. Última atualização: **30/10/2026** (sessão 1: provisionamento + painel).
 
 ## Onde estamos
 
 | Frente | Estado |
 |---|---|
-| Repositório | ✅ `luifegja/henrique-ventura-infra` (origin) |
-| Servidor | ✅ `/opt/henriqueventura` (700) + `.env` (600, 4 variáveis) |
+| Repositório | ✅ commits locais; remote `origin` = `git@github.com:luifegja/henrique-ventura-infra.git`. ⛔ **push pendente**: a trava de permissões da sessão barrou o `git push` (o Luiz libera ou roda `git push -u origin main`) |
+| Servidor | ✅ `/opt/henriqueventura` (700) + `.env` (600, 5 variáveis) + `docker-compose.yml` + `backups/` |
 | Chatwoot | ✅ conta **20** "Henrique Ventura" (locale pt_BR); Luiz (id 4) administrador; bot id 16 agente |
-| Cadência comercial | ✅ atributo de contato `cadencia_comercial` (lista, definição 17) com Lead → 1º contato → Qualificação → Agendamento → Reunião diagnóstico → Follow up → Contrato enviado → Pagamento. Script rodado 3× (idempotente). ⛔ falta o teste na tela pelo Luiz |
-| Evolution | ✅ instância `henriqueventura` criada (Baileys, sem QR, sem Chatwoot), estado `close` |
-| WhatsApp | ⛔ não pareado — aguarda número e alguém com o aparelho (`docs/runbooks/01-parear-whatsapp.md`) |
-| Henrique no Chatwoot | ⛔ aguarda o e-mail dele (`scripts/cria-usuario-chatwoot.sh`) |
+| Cadência comercial | ✅ atributo de contato `cadencia_comercial` (lista, definição 17): Lead → 1º contato → Qualificação → Agendamento → Reunião diagnóstico → Follow up → Contrato enviado → Pagamento |
+| Evolution | ✅ instância `henriqueventura` (Baileys, sem Chatwoot ainda), estado `close`. A chave da instância só abre a nossa (401 nas outras, conferido) |
+| Painel | ✅ `henriqueventura-web:0.1.0` healthy em `127.0.0.1:3600`. Telas Leads (quadro), Atendimentos (ler, responder, resolver, etapa) e WhatsApp (pareamento com freios + espera de 5 min + liga o Chatwoot). Login com usuário do Chatwoot. typecheck/lint verdes, Vitest 28/28, **bateria de ponta a ponta 23/23** (`scripts/teste-ponta-a-ponta.py`, tudo apagado no fim) |
+| Domínio | ✅ DNS `henriqueventura.advotrack.com.br → 167.233.131.109` (Luiz, Registro.br). ⛔ **bloco do Caddy aguardando o "pode aplicar" do Luiz** (`infra/caddy/bloco-henriqueventura.md`) |
+| WhatsApp | ⛔ não pareado — aguarda o número e alguém com o aparelho; pela tela WhatsApp do painel (ou `docs/runbooks/01-parear-whatsapp.md`) |
+| Henrique no Chatwoot/painel | ⛔ aguarda o e-mail dele (`scripts/cria-usuario-chatwoot.sh`; a mesma senha vale para os dois) |
 
 ## Próximos passos
 
-1. E-mail do Henrique → `bash scripts/cria-usuario-chatwoot.sh "Henrique Ventura" <e-mail>`
+1. Push para o GitHub.
+2. Caddy (com o "pode aplicar") → `https://henriqueventura.advotrack.com.br/login` = 200 → avisar o Vítor.
+3. E-mail do Henrique → `bash scripts/cria-usuario-chatwoot.sh "Henrique Ventura" <e-mail>`
    (senha mostrada uma vez, entregue a ele).
-2. Pareamento do número do Henrique (runbook 01) → `bash scripts/liga-chatwoot-evolution.sh`
-   → mensagem de teste do celular do Luiz cai na inbox.
-3. Teste na tela: contato de teste → Cadência comercial → 8 opções → escolher → salvar → apagar.
+4. Pareamento pela tela WhatsApp (Henrique com o celular na mão) → 5 min → o painel liga o
+   Chatwoot e põe bot + administradores na inbox → mensagem do celular do Luiz cai em Atendimentos.
 
 ## Decisões
 
-- 30/10/2026: slug `henriqueventura`; primeira entrega só Chatwoot + Evolution + campo,
-  sem banco/n8n/IA (`docs/plano.md`); campo como lista de contato
+- 30/10/2026: slug `henriqueventura`; campo como lista de contato
   (`docs/decisoes/2026-10-30-cadencia-comercial.md`).
+- 30/10/2026: painel sem banco, Chatwoot como fonte da verdade, login do Chatwoot, sem agentes
+  de IA; responder pelo painel; contato sem etapa em Lead
+  (`docs/decisoes/2026-10-30-painel-sem-banco.md`; plano em `docs/plano.md`).
 
 ## Armadilhas
 
@@ -35,3 +40,11 @@ Documento vivo. Última atualização: **30/10/2026** (sessão 1: provisionament
 - `liga-chatwoot-evolution.sh` usa o token do bot (agente), como o GymTrack (inbox 16 da
   conta 16 nasceu assim). Se a inbox não aparecer, o script avisa: conferir o log da
   Evolution antes de qualquer outra coisa.
+- O `access_token` só vem no `POST /auth/sign_in` se a conta tiver `api_and_webhooks` ligado (a
+  20 tem). Se um dia sumir, o login do painel responde "O Chatwoot não liberou o acesso por API".
+- Para agente, `GET /contacts` do Chatwoot repetiu um contato (bateria de 30/10); o cliente
+  deduplica por id.
+- O primeiro `docker build` do painel falhou uma vez sem erro claro (provável download das fontes
+  do Google no `next build`); o seguinte passou. Se repetir: `docker build --progress=plain`.
+- `isVisible()` do Playwright não espera; a bateria usa `waitFor` (helper `ve`).
+- Estado do pareamento é memória do processo: reiniciar o contêiner zera as tentativas do dia.
