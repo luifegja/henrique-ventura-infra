@@ -89,7 +89,7 @@ def limpa(token):
     if not token:
         return
     try:
-        for c in api("GET", "/contacts/search?q=E2E%20Lead", token).get("payload", []):
+        for c in api("GET", "/contacts/search?q=E2E", token).get("payload", []):
             if (c.get("name") or "").startswith("E2E "):
                 api("DELETE", f"/contacts/{c['id']}", token)
                 print(f"  contato {c['id']} apagado")
@@ -162,6 +162,18 @@ try:
             str(saida[0].get("sender") if saida else None))
     st = api("GET", f"/conversations/{conv['id']}", token).get("status")
     confere("conversa resolvida pelo painel", st == "resolved", st)
+    novos = [x for x in api("GET", "/contacts/search?q=E2E%20Lead%20Novo", token).get("payload", []) if x.get("name") == "E2E Lead Novo"]
+    confere("lead novo existe no Chatwoot (uma vez)", len(novos) == 1, f"{len(novos)} contatos")
+    if novos:
+        n = novos[0]
+        confere("lead novo com WhatsApp em E.164", n.get("phone_number") == "+5500000000002", n.get("phone_number"))
+        confere("lead novo com e-mail", n.get("email") == "e2e-lead-novo@exemplo.com", n.get("email"))
+        confere("lead novo com etapa Qualificação", (n.get("custom_attributes") or {}).get("cadencia_comercial") == "Qualificação", n.get("custom_attributes"))
+        notas = api("GET", f"/contacts/{n['id']}/notes", token)
+        notas = notas if isinstance(notas, list) else notas.get("payload", [])
+        confere("observação virou nota no contato", any("Nota E2E: veio por indicação." in (x.get("content") or "") for x in notas), str(notas)[:200])
+    dup = [x for x in api("GET", "/contacts/search?q=E2E%20Duplicado", token).get("payload", [])]
+    confere("duplicado não foi criado no Chatwoot", len(dup) == 0, f"{len(dup)}")
     rc = 0 if all(ok for _, ok, _ in resultados) else 1
 finally:
     print("== limpeza")

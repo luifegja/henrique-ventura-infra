@@ -5,6 +5,7 @@ import { CADENCIA_KEY, CADENCIA_PADRAO } from "@/lib/cadencia";
 import { PageHeader } from "@/components/ui/panel";
 import { Notice } from "@/components/ui/badge";
 import { KanbanBoard, type BoardCard } from "@/components/leads/kanban-board";
+import { NovoLead } from "@/components/leads/novo-lead";
 
 export const metadata: Metadata = { title: "Leads" };
 export const dynamic = "force-dynamic";
@@ -35,6 +36,7 @@ export default async function LeadsPage() {
         eyebrow="Cadência comercial"
         title="Leads"
         description="Arraste o cartão para mudar a etapa. A etapa fica gravada no contato do Chatwoot."
+        actions={<NovoLead etapas={etapas} />}
       />
       {error ? <Notice tone="danger" className="mb-3">{error}</Notice> : null}
       {truncated ? (

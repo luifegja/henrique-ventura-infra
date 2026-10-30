@@ -78,6 +78,9 @@ sem multi-cliente. Peças que não se negociam:
   interna `http://chatwoot-web:3000`. O token do bot só liga a integração da Evolution.
 - **Etapas = valores da definição do atributo** (lidos na hora); sem etapa → Lead
   (`lib/cadencia.ts`, testado).
+- **Lead novo = contato novo no Chatwoot** (`criarLead` em `app/(app)/leads/actions.ts`):
+  telefone em E.164 (`lib/lead.ts`, testado), procura antes pelo mesmo WhatsApp (não duplica),
+  etapa em `custom_attributes`, observação como nota do contato. Nada fica guardado no painel.
 - **WhatsApp**: chave da instância, freios em `lib/whatsapp-gate.ts` (testado), estado em memória
   (`lib/whatsapp.ts`), coreografia em `app/(app)/whatsapp/actions.ts` (decidir pelo estado VIVO;
   QR lido → nunca chamar `connect` de novo; 3 min sem leitura → `logout` por temporizador; 5 min

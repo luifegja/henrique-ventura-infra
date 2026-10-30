@@ -11,6 +11,9 @@ Chatwoot**.
 - **Leads** — um quadro com as etapas da cadência (Lead, 1º contato, Qualificação,
   Agendamento, Reunião diagnóstico, Follow up, Contrato enviado, Pagamento). Arraste o cartão
   para mudar a etapa; contato novo aparece em Lead. Clique no nome para abrir a conversa.
+  **Novo lead** (botão no alto) cria o contato direto no Chatwoot: nome, WhatsApp, e-mail
+  (opcional), etapa e observação (vira nota no contato). WhatsApp que já é de outro lead não é
+  duplicado: a tela mostra quem é.
 - **Atendimentos** — conversas do WhatsApp (abertas, pendentes, resolvidas). Responda na caixa
   de baixo (Enter envia; a mensagem sai com o seu nome), troque a etapa no alto, resolva ou
   reabra, ou abra no Chatwoot.

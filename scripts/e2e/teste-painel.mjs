@@ -10,6 +10,7 @@ const results = [];
 const check = (caso, ok, detalhe = "") => results.push({ caso, ok: !!ok, detalhe: String(detalhe).slice(0, 300) });
 /** isVisible() do Playwright não espera: esta espera até `ms`. */
 const ve = (loc, ms = 15000) => loc.first().waitFor({ state: "visible", timeout: ms }).then(() => true, () => false);
+const some = (loc, ms = 15000) => loc.first().waitFor({ state: "hidden", timeout: ms }).then(() => true, () => false);
 const shot = (page, nome) => page.screenshot({ path: `${OUT}/${nome}.png`, fullPage: true }).catch(() => {});
 
 async function login(page, email, pw) {
@@ -66,6 +67,32 @@ try {
     const persistiu = await ve(page.locator('section[aria-label="Agendamento"] article[aria-label="E2E Lead Teste"]'));
     check("depois de recarregar, continua em Agendamento", persistiu);
     await shot(page, "02-quadro-movido");
+
+    // lead novo pelo formulário (vira contato no Chatwoot; conferido depois pela API)
+    await page.getByRole("button", { name: "Novo lead" }).click();
+    const dlg = page.getByRole("dialog", { name: "Novo lead" });
+    check("formulário de lead novo abre", await ve(dlg));
+    await dlg.getByRole("button", { name: "Criar lead" }).click();
+    check("campos obrigatórios avisam", await ve(dlg.getByText("Informe o nome.")));
+    await dlg.getByLabel("Nome").fill("E2E Lead Novo");
+    await dlg.getByLabel("WhatsApp").fill("+55 00 00000-0002");
+    await dlg.getByLabel("E-mail (opcional)").fill("e2e-lead-novo@exemplo.com");
+    await dlg.getByLabel("Etapa da cadência").selectOption("Qualificação");
+    await dlg.getByLabel("Observação (opcional)").fill("Nota E2E: veio por indicação.");
+    await dlg.getByRole("button", { name: "Criar lead" }).click();
+    check("formulário fecha depois de criar", await some(dlg));
+    check("lead novo aparece em Qualificação", await ve(page.locator('section[aria-label="Qualificação"] article[aria-label="E2E Lead Novo"]')));
+    await shot(page, "02b-lead-novo");
+
+    // mesmo WhatsApp de um lead existente: não duplica, aponta o existente
+    await page.getByRole("button", { name: "Novo lead" }).click();
+    await dlg.getByLabel("Nome").fill("E2E Duplicado");
+    await dlg.getByLabel("WhatsApp").fill("+55 00 00000-0001");
+    await dlg.getByRole("button", { name: "Criar lead" }).click();
+    check("WhatsApp repetido é barrado com o nome do existente", await ve(dlg.getByText('Este WhatsApp já é o lead "E2E Lead Teste".')));
+    check("oferece abrir o lead existente", await ve(dlg.getByRole("link", { name: "Abrir o lead existente" })));
+    await dlg.getByRole("button", { name: "Cancelar" }).click();
+    check("nenhum cartão duplicado", (await page.locator('article[aria-label="E2E Duplicado"]').count()) === 0);
 
     await page.goto(`${B}/whatsapp`);
     await ve(page.getByRole("status"));

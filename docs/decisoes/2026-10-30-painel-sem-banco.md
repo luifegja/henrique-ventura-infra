@@ -46,3 +46,13 @@ estado do WhatsApp em `integrations`). Aqui não há n8n nem robô.
 - **Usuário com verificação em duas etapas no Chatwoot** não entra no painel (mensagem clara).
 - Para agente, a listagem de contatos do Chatwoot repetiu um contato no teste; o cliente
   deduplica por id.
+
+## Emendas
+
+- **30/10/2026, criar lead.** Pedido do Luiz: criar leads pelo painel, espelhados no Chatwoot.
+  Sem banco, "espelhado" é criar o próprio contato no Chatwoot (`POST /contacts`) com o token de
+  quem está logado: nome, WhatsApp em E.164 (o formato que a Evolution usa para casar o contato
+  quando o lead escrever), e-mail opcional, `cadencia_comercial` com a etapa escolhida e a
+  observação como nota (`POST /contacts/{id}/notes`). Antes de criar, busca pelo mesmo WhatsApp
+  e, se houver, aponta o existente em vez de duplicar. Não abre conversa nem manda mensagem:
+  isso depende do WhatsApp pareado e fica para quando o Luiz pedir.

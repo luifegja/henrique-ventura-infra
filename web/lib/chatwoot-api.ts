@@ -146,7 +146,7 @@ function toContact(c: Json): Contact {
     phone: str(c.phone_number),
     email: str(c.email),
     attrs: (c.custom_attributes && typeof c.custom_attributes === "object" ? c.custom_attributes : {}) as Record<string, unknown>,
-    lastActivityAt: iso(c.last_activity_at),
+    lastActivityAt: iso(c.last_activity_at) ?? iso(c.created_at),
     thumbnail: str(c.thumbnail),
   };
 }
@@ -168,6 +168,32 @@ export async function listContacts(token: string, maxPages = 40): Promise<{ cont
 /** O Chatwoot faz merge de custom_attributes no PUT: só a chave enviada muda. */
 export async function updateContactAttribute(token: string, contactId: number, key: string, value: string): Promise<void> {
   await call(token, "PUT", `/contacts/${contactId}`, { custom_attributes: { [key]: value } });
+}
+
+/**
+ * Cria o contato (o "lead novo" do painel). O Chatwoot recusa com 422 telefone ou e-mail já
+ * usados na conta; quem chama procura o existente por `searchContacts`.
+ */
+export async function createContact(
+  token: string,
+  input: { name: string; phone: string; email?: string | null; attrs?: Record<string, string> },
+): Promise<Contact> {
+  const body: Json = { name: input.name, phone_number: input.phone };
+  if (input.email) body.email = input.email;
+  if (input.attrs && Object.keys(input.attrs).length) body.custom_attributes = input.attrs;
+  const j = (await call(token, "POST", "/contacts", body)) as Json;
+  const p = (j.payload ?? j) as Json;
+  return toContact((p.contact as Json) ?? p);
+}
+
+/** Busca do Chatwoot (nome, e-mail, telefone, identificador). */
+export async function searchContacts(token: string, q: string): Promise<Contact[]> {
+  return list(await call(token, "GET", `/contacts/search?q=${encodeURIComponent(q)}&page=1`)).map(toContact).filter((c) => c.id > 0);
+}
+
+/** Nota no contato (aparece em Notas, na ficha do Chatwoot). */
+export async function addContactNote(token: string, contactId: number, content: string): Promise<void> {
+  await call(token, "POST", `/contacts/${contactId}/notes`, { content });
 }
 
 export async function getContact(token: string, contactId: number): Promise<Contact> {
