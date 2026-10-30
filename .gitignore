@@ -1,0 +1,29 @@
+# Segredos — NUNCA versionar (~/handoff/handoff-projeto-irmao.md §1.2 e §5.4)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+id_ed25519*
+CREDENCIAIS*
+.senha-*
+
+# Dependências e build
+node_modules/
+.next/
+dist/
+build/
+coverage/
+__pycache__/
+*.pyc
+*.tsbuildinfo
+
+# Sistema
+.DS_Store
+Thumbs.db
+*.log
+
+# Temporários
+tmp/
+*.tmp
+*.bak
