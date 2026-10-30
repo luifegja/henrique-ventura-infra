@@ -12,14 +12,14 @@ Documento vivo. Última atualização: **30/10/2026** (sessão 1: provisionament
 | Cadência comercial | ✅ atributo de contato `cadencia_comercial` (lista, definição 17): Lead → 1º contato → Qualificação → Agendamento → Reunião diagnóstico → Follow up → Contrato enviado → Pagamento |
 | Evolution | ✅ instância `henriqueventura` (Baileys, sem Chatwoot ainda), estado `close`. A chave da instância só abre a nossa (401 nas outras, conferido) |
 | Painel | ✅ `henriqueventura-web:0.1.0` healthy em `127.0.0.1:3600`. Telas Leads (quadro), Atendimentos (ler, responder, resolver, etapa) e WhatsApp (pareamento com freios + espera de 5 min + liga o Chatwoot). Login com usuário do Chatwoot. typecheck/lint verdes, Vitest 28/28, **bateria de ponta a ponta 23/23** (`scripts/teste-ponta-a-ponta.py`, tudo apagado no fim) |
-| Domínio | ✅ DNS `henriqueventura.advotrack.com.br → 167.233.131.109` (Luiz, Registro.br). ⛔ **bloco do Caddy aguardando o "pode aplicar" do Luiz** (`infra/caddy/bloco-henriqueventura.md`) |
+| Domínio | ✅ **no ar em `https://henriqueventura.advotrack.com.br`** (30/10 15:35, com o "pode" do Luiz): bloco no fim do Caddyfile (backup `/opt/advotrack/caddy/Caddyfile.bak-20261030-153546-henriqueventura`), validado num Caddy descartável e no contêiner, reload sem reinício; Let's Encrypt até 28/01/2027; `/login` 200; vizinhos com os mesmos códigos de antes. ⛔ **avisar o Vítor** (espelho no repo do AdvoTrack) |
 | WhatsApp | ⛔ não pareado — aguarda o número e alguém com o aparelho; pela tela WhatsApp do painel (ou `docs/runbooks/01-parear-whatsapp.md`) |
 | Henrique no Chatwoot/painel | ⛔ aguarda o e-mail dele (`scripts/cria-usuario-chatwoot.sh`; a mesma senha vale para os dois) |
 
 ## Próximos passos
 
 1. Push para o GitHub.
-2. Caddy (com o "pode aplicar") → `https://henriqueventura.advotrack.com.br/login` = 200 → avisar o Vítor.
+2. Avisar o Vítor do bloco novo no Caddyfile (e de que `litoralindica.advotrack.com.br` já respondia 000 antes da mudança).
 3. E-mail do Henrique → `bash scripts/cria-usuario-chatwoot.sh "Henrique Ventura" <e-mail>`
    (senha mostrada uma vez, entregue a ele).
 4. Pareamento pela tela WhatsApp (Henrique com o celular na mão) → 5 min → o painel liga o

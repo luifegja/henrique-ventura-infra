@@ -7,6 +7,12 @@ e o Vítor é avisado (o espelho em `infra/caddy/Caddyfile` do repositório do A
 DNS: `henriqueventura.advotrack.com.br A 167.233.131.109`, criado pelo Luiz no Registro.br em
 30/10/2026 (resolvendo no mesmo dia).
 
+**Aplicado em 30/10/2026 às 15:35**, com o "pode" do Luiz: backup
+`/opt/advotrack/caddy/Caddyfile.bak-20261030-153546-henriqueventura`, `validate` OK (descartável e
+contêiner), `reload` OK, `/login` = 200, certificado Let's Encrypt até 28/01/2027, vizinhos com os
+mesmos códigos de antes. **Falta o espelho** em `infra/caddy/Caddyfile` do repositório do AdvoTrack
+(Vítor).
+
 ## Bloco (fim do Caddyfile; nenhum outro bloco é tocado)
 
 ```caddyfile
