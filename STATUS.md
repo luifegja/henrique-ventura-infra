@@ -14,13 +14,12 @@ Documento vivo. Última atualização: **30/10/2026** (sessão 1: provisionament
 | Painel | ✅ `henriqueventura-web:0.1.0` healthy em `127.0.0.1:3600`. Telas Leads (quadro), Atendimentos (ler, responder, resolver, etapa) e WhatsApp (pareamento com freios + espera de 5 min + liga o Chatwoot). Login com usuário do Chatwoot. typecheck/lint verdes, Vitest 28/28, **bateria de ponta a ponta 23/23** (`scripts/teste-ponta-a-ponta.py`, tudo apagado no fim) |
 | Domínio | ✅ **no ar em `https://henriqueventura.advotrack.com.br`** (30/10 15:35, com o "pode" do Luiz): bloco no fim do Caddyfile (backup `/opt/advotrack/caddy/Caddyfile.bak-20261030-153546-henriqueventura`), validado num Caddy descartável e no contêiner, reload sem reinício; Let's Encrypt até 28/01/2027; `/login` 200; vizinhos com os mesmos códigos de antes. ⛔ **avisar o Vítor** (espelho no repo do AdvoTrack) |
 | WhatsApp | ⛔ não pareado — aguarda o número e alguém com o aparelho; pela tela WhatsApp do painel (ou `docs/runbooks/01-parear-whatsapp.md`) |
-| Henrique no Chatwoot/painel | ⛔ aguarda o e-mail dele (`scripts/cria-usuario-chatwoot.sh`; a mesma senha vale para os dois) |
+| Henrique no Chatwoot/painel | ✅ usuário 21 `henrique@henriqueventura.local` (provisório, a pedido do Luiz), **administrador só da conta 20** (conferido: nenhuma outra conta); senha entregue ao Luiz no chat, não gravada. ⛔ trocar pelo e-mail real quando vier |
 
 ## Próximos passos
 
 1. Avisar o Vítor do bloco novo no Caddyfile (e de que `litoralindica.advotrack.com.br` já respondia 000 antes da mudança).
-2. E-mail do Henrique → `bash scripts/cria-usuario-chatwoot.sh "Henrique Ventura" <e-mail>`
-   (senha mostrada uma vez, entregue a ele).
+2. E-mail real do Henrique → trocar o e-mail do usuário 21 (o login muda; a senha continua).
 3. Pareamento pela tela WhatsApp (Henrique com o celular na mão) → 5 min → o painel liga o
    Chatwoot e põe bot + administradores na inbox → mensagem do celular do Luiz cai em Atendimentos.
 
